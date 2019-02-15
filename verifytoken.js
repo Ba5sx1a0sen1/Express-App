@@ -9,11 +9,13 @@ function verifytoken(req, res, next) {
         console.log(err)
         if (err.name === 'TokenExpiredError'){
           res.status(401).json({
+            success: false,
             message:'Token Expired',
             err
           })
         }
         res.status(403).json({
+          success: false,
           message: 'Wrong Token',
           err
         })
@@ -25,6 +27,7 @@ function verifytoken(req, res, next) {
     })
   } else {
     res.status(401).json({
+      success: false,
       message: 'no token'
     })
   }
