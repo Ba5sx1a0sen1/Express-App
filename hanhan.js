@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
+const verifytoken = require('./verifytoken')
 const users = [
   { name: 'xxxx', password: 'xxxx'},
   { name: 'yyyy', password: 'yyyy'}
@@ -23,7 +24,7 @@ app.post('/login', (req,res) => {
       } else {
         token = jwt.sign({
           user,
-          exp: Math.floor(Date.now() / 1000) + 30*1000 //有效期30秒
+          exp: Math.floor(Date.now() / 1000) + 30//有效期30秒
         }, secretkey)
         message = 'Login Success'
         break
@@ -39,7 +40,7 @@ app.post('/login', (req,res) => {
   }
 })
 
-app.post('/getusers', (req, res) => {
+app.post('/getusers', verifytoken, (req, res) => {
   let user_list = []
   users.forEach((user) => {
     user_list.push({"name": user.name})

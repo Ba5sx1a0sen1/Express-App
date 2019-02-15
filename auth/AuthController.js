@@ -14,7 +14,7 @@ router.post('/login', (req, res) => {
     let token = jwt.sign(
       {
         admin: true,
-        exp: Math.floor(Date.now()/1000) + 30*1000 //三十秒后过期
+        exp: Math.floor(Date.now()/1000) + 30 //三十秒后过期
       }, secret)
     res.status(200).send({
       auth: true,
