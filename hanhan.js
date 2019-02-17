@@ -41,7 +41,7 @@ app.post('/login', (req,res) => {
       } else {
         token = jwt.sign({
           user,
-          exp: Math.floor(Date.now() / 1000) + 30//有效期30秒
+          exp: Math.floor(Date.now() / 1000) + 86400//有效期30秒
         }, secretkey)
         message = 'Login Success'
         break
@@ -53,7 +53,7 @@ app.post('/login', (req,res) => {
       message,token,success: true
     })
   }else {
-    res.status(403).send({message})
+    res.status(403).send({message, success: false})
   }
 })
 
@@ -66,7 +66,7 @@ app.get('/getusers', verifytoken, (req, res) => {
 })
 
 app.post('/upload', verifytoken, uploadSingle, (req, res, next) => {
-  res.status(200).send({message: '上传成功'})
+  res.status(200).send({message: '上传成功', success: true})
 })
 
 app.post('/verifytoken', verifytoken, (req, res) => {
@@ -80,6 +80,13 @@ app.get('/dashboard', verifytoken, (req, res) => {
   res.status(200).send({
     success: true,
     msg: '获取仪表板数据'
+  })
+})
+
+app.get('/testroute', verifytoken, (req, res) => {
+  res.status(200).send({
+    success: true,
+    message: '具备访问权限'
   })
 })
 
