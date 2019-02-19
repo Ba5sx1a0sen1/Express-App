@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const verifytoken = require('./verifytoken') //校验是否有token
+const verifyadmin = require('./verifyadmin.js') //校验是否为管理员
 const cors= require('cors')
 const multer = require('multer')
 const morgan = require('morgan')
@@ -92,4 +93,14 @@ app.get('/testroute', verifytoken, (req, res) => {
 
 app.listen(3000, () => {
   console.log('app listen on port 3000')
+})
+
+
+app.get('/testaxios', verifytoken, verifyadmin, (req, res) => {
+  const query = req.query
+  res.status(200).send({
+    success: true,
+    message: 'axios test pass',
+    query: { ...query }
+  })
 })
