@@ -6,6 +6,7 @@ const verifyadmin = require('./verifyadmin.js') //校验是否为管理员
 const cors= require('cors')
 const multer = require('multer')
 const morgan = require('morgan')
+const TestDBController = require('./testdb/TestDBController.js')
 const users = [
   { name: 'cai.yusen', password: 'xiaosa'},
   { name: 'xxxx', password: 'xxxx'},
@@ -28,6 +29,8 @@ app.use(cors())
 app.use(morgan('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
+
+app.use('/testdb', TestDBController)
 
 app.post('/login', (req,res) => {
   let message,token
