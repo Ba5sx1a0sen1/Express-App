@@ -19,16 +19,12 @@ router.get('/', verifytoken, (req, res, next) => {
   
 })
 
-router.get('/names', verifytoken, (req, res, next) => {
-  Name.find((err, namesList) => {
-    if(err) { return console.log(err) }
-    console.log(namesList)
-    res.send(namesList)
-  })
-})
-
 router.get('/blog', verifytoken, (req, res, next) => {
-  BlogModel.find({hidden: false},{title:1,content:1,_id:0},{},(err, docs) => {
+  let { page, size } = req.body
+  page = parseInt(page) || 0
+  size = parseInt(size) || 0
+  skipNum = (page===0? 0 : page - 1) * size
+  BlogModel.find({hidden: false},{title:1,content:1,_id:0},{limit: size, skip: skipNum},(err, docs) => {
     res.status(200).send({
       success: true,
       list: docs
