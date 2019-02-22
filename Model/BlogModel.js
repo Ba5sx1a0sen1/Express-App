@@ -5,7 +5,8 @@ const BlogSchema = new mongoose.Schema({
   hidden: {
     default: false,
     type: Boolean
-  }
+  },
+  comments: [mongoose.SchemaTypes.ObjectId],
 })
 
 const BlogModel = mongoose.model('Blog', BlogSchema)
