@@ -15,19 +15,20 @@ db.once('open', ()=>{console.log('数据库链接成功')})
 router.use(bodyParser.urlencoded({extended:false}))
 router.use(bodyParser.json())
 
-router.get('/', verifytoken, (req, res, next) => {
-  
-})
-
-router.get('/blog', verifytoken, (req, res, next) => {
+router.get('/blog', verifytoken, async (req, res, next) => {
   let { page, size } = req.body
   page = parseInt(page) || 0
   size = parseInt(size) || 0
   skipNum = (page===0? 0 : page - 1) * size
+  let count = await BlogModel.find({hidden: false}).count() //查询获得总数
+  let pageSize = size
   BlogModel.find({hidden: false},{title:1,content:1,_id:0},{limit: size, skip: skipNum},(err, docs) => {
     res.status(200).send({
       success: true,
-      list: docs
+      list: docs,
+      total: count,
+      pageSize,
+      page
     })
   })
   // BlogModel.find({},{title:1,content:1,hidden:1,_id:0},(err, docs) => {

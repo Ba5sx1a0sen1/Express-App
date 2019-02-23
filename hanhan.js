@@ -7,6 +7,9 @@ const cors= require('cors')
 const multer = require('multer')
 const morgan = require('morgan')
 const TestDBController = require('./testdb/TestDBController.js')
+const FilePathModel = require('./Model/FilePathModel')
+const nodepath = require('path')
+
 const users = [
   { name: 'cai.yusen', password: 'xiaosa'},
   { name: 'xxxx', password: 'xxxx'},
@@ -69,8 +72,63 @@ app.get('/getusers', verifytoken, (req, res) => {
   res.status(200).send({users:user_list})
 })
 
-app.post('/upload', verifytoken, uploadSingle, (req, res, next) => {
-  res.status(200).send({message: '上传成功', success: true})
+app.post('/upload', verifytoken, uploadSingle, async (req, res, next) => {
+  //接收到文件先判断是不是已经有同名的了，没有就添加，有了直接返回
+  const path = req.file.destination + req.file.filename
+  const filename = req.file.originalname
+  
+  try {
+    const FilePathQuery = await FilePathModel.findOne({filename})
+    //查不到即为null 查到不为null
+    if (FilePathQuery == null) {
+      const FilePathEntity = new FilePathModel({path, filename})
+      await FilePathEntity.save()
+      res.status(200).send({message: '上传成功', success: true})
+    } else {
+      res.status(200).send({messae:'已存在同名文件', success: true})
+    }
+  } catch (e) {
+    res.status(500).send({messae:'服务端出错', success: false})
+  }
+})
+
+app.get('/filelist', verifytoken, async (req, res, next) => {
+  try {
+    let { page, size } = req.body
+    page = parseInt(page) || 0
+    size = parseInt(size) || 0
+    skipNum = (page===0? 0 : page - 1) * size
+    const total = await FilePathModel.count()
+    const FileListEntity = await FilePathModel.find({},{_id:1, filename:1, path:1},{limit:size,skip:skipNum,sort: '-createdAt'})
+    res.status(200).send({
+      success: true,
+      messae: '获取文件列表成功',
+      list: FileListEntity,
+      total,
+      page
+    })
+  } catch(e) {
+    console.log(e)
+    res.status(500).send({message:'服务端出错', success: false})
+  }
+})
+
+app.get('/download/:id', verifytoken, async (req, res, next) => {
+  try {
+    const fileid = req.params.id
+    if(!fileid) {
+      res.status(404).send({success:false,message:'无效下载'})
+    } else {
+      const FilePathEntity = await FilePathModel.findOne({_id: fileid})
+      const {path, filename} = FilePathEntity
+      console.log(nodepath.resolve(__dirname, path))
+      res.setHeader('Access-Control-Expose-Headers','Content-Disposition')
+      res.status(200).download(nodepath.resolve(__dirname, path), filename)
+    }
+  } catch (e) {
+    console.log(e)
+    res.status(500).send({message:'服务端出错', success: false})
+  }
 })
 
 app.post('/verifytoken', verifytoken, (req, res) => {
