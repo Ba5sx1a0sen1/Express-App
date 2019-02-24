@@ -92,7 +92,7 @@ app.post('/upload', verifytoken, uploadSingle, async (req, res, next) => {
   }
 })
 
-app.get('/filelist', verifytoken, async (req, res, next) => {
+app.post('/filelist', verifytoken, async (req, res, next) => {
   try {
     let { page, size } = req.body
     page = parseInt(page) || 0
@@ -105,7 +105,8 @@ app.get('/filelist', verifytoken, async (req, res, next) => {
       messae: '获取文件列表成功',
       list: FileListEntity,
       total,
-      page
+      page,
+      pageSize: size
     })
   } catch(e) {
     console.log(e)
