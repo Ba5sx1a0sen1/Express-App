@@ -12,6 +12,7 @@ const nodepath = require('path')
 
 const users = [
   { name: 'cai.yusen', password: 'xiaosa'},
+  { name: 'fushuaisb', password: 'fushuaisb'},
   { name: 'xxxx', password: 'xxxx'},
   { name: 'yyyy', password: 'yyyy'}
 ]
@@ -76,7 +77,19 @@ app.post('/upload', verifytoken, uploadSingle, async (req, res, next) => {
   //接收到文件先判断是不是已经有同名的了，没有就添加，有了直接返回
   const path = req.file.destination + req.file.filename
   const filename = req.file.originalname
-  
+  const size = req.file.size / 1024 //kb大小
+  //非浏览器上传前校验大小
+  if(size > 102400) {
+    res.status(403).send({message:'禁止上传大于100mb的文件', success: false})
+    return false
+  }
+  //校验文件总数
+  let count = await FilePathModel.find().count()
+  if(count >= 50) {
+    res.status(403).send({messae:'已达到服务器存储容量', success:false})
+    return false
+  }
+
   try {
     const FilePathQuery = await FilePathModel.findOne({filename})
     //查不到即为null 查到不为null
@@ -99,7 +112,7 @@ app.post('/filelist', verifytoken, async (req, res, next) => {
     size = parseInt(size) || 0
     skipNum = (page===0? 0 : page - 1) * size
     const total = await FilePathModel.count()
-    const FileListEntity = await FilePathModel.find({},{_id:1, filename:1, path:1},{limit:size,skip:skipNum,sort: '-createdAt'})
+    const FileListEntity = await FilePathModel.find({hidden: false},{_id:1, filename:1, path:1},{limit:size,skip:skipNum,sort: '-createdAt'})
     res.status(200).send({
       success: true,
       messae: '获取文件列表成功',
@@ -129,6 +142,21 @@ app.get('/download/:id', verifytoken, async (req, res, next) => {
   } catch (e) {
     console.log(e)
     res.status(500).send({message:'服务端出错', success: false})
+  }
+})
+
+app.delete('/deletefile/:id', verifytoken, async (req, res, next) => {
+  try {
+    const fileid = req.params.id
+    if (!fileid) {
+      res.status(404).send({success:false,message:'无效删除'})
+    } else {
+      await FilePathModel.findByIdAndUpdate(fileid,{hidden: true})
+      res.status(200).send({success:true,message:'删除成功'})
+    }
+  } catch (e) {
+    console.log(e)
+    res.status(500).send({messae:'服务端出错', success: false})
   }
 })
 
