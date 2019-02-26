@@ -4,3 +4,7 @@
 如果为表单application/x-www-form-urlencoded则走urlencoded流程
 如果为multipart-formdata，则文件存入file或files（根据multer的配置），
 而普通字段存入body
+
+## Todo
+1. 文件列表返回日期
+2. 文件列表返回文件大小
